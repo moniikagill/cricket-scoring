@@ -62,7 +62,7 @@ pipeline {
                 jdk "jdk8"
             }
             steps {
-                withEnv(['PATH+CHROMEHOME=/usr/lib/chromium-browser/']) {
+                withEnv(['PATH+CHROMEHOME=/usr/lib64/chromium-browser/']) {
                     wrap([$class: 'Xvfb']) {
                         sh './gradlew test -Dcricket.url=http://localhost:8081/calc.html'
                     }
@@ -83,13 +83,13 @@ pipeline {
                     junit 'build/test-results/test/TEST-*.xml'
                 }
 
-                success {
-                    slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} acceptance test passed (<${env.BUILD_URL}|Open>)"
-                }
+               // success {
+                //    slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} acceptance test passed (<${env.BUILD_URL}|Open>)"
+               // }
 
-                failure {
-                    slackSend color:'danger', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} acceptance test failed (<${env.BUILD_URL}|Open>)"
-                }
+               // failure {
+               //     slackSend color:'danger', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} acceptance test failed (<${env.BUILD_URL}|Open>)"
+               // }
             }
         }
 
@@ -100,7 +100,7 @@ pipeline {
                 }
                 sh 'echo "Copying web app to Test Environment (/var/www)"'
                 sh 'rsync -av --exclude=.svn web/*.html web/images web/js web/styles /var/www/'
-                slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} deployed to system test (<${env.BUILD_URL}|Open>)"
+                //slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} deployed to system test (<${env.BUILD_URL}|Open>)"
             }
         }
     }
