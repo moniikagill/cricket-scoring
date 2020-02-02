@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
   - name: node
-    image: node:8-alpine
+    image: rsuela/nodejs-npm-grunt-chromium:latest
     command:
     - cat
     tty: true
