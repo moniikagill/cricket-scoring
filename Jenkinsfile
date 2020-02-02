@@ -20,17 +20,21 @@ pipeline {
         stage('Build and Unit Test') {
             steps {
                 parallel (
-                    container('node') {
-
-                        "JS and CSS" : {
+                    
+                    "JS and CSS" : {
+                        container('node') {
                             sh './gradlew jshintjs jsdocjs csslint'
-                        },
-                        "Java Test Compile" : {
+                        }
+                    },
+                    "Java Test Compile" : {
+                        container('node') {
                             withEnv(["PATH+JAVA=${tool 'jdk8'}/bin"]) {
                                 sh './gradlew testClasses'
                             }
-                        },
-                        "JS Unit Test" : {
+                        }
+                    },
+                    "JS Unit Test" : {
+                        container('node') {
                             sh 'npm install'
                             sh 'grunt'
                         }
