@@ -63,7 +63,7 @@ pipeline {
 
         stage('Deploy to Acceptance Test Environment') {
             steps {
-                container('maven') {
+                container('node') {
                     sh 'echo "Copying web app to Acceptance Environment (/var/www-test)"'
                     sh 'rsync -av --exclude=.svn web/*.html web/images web/js web/styles /var/www-test/'
                     slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} deployed to acceptance test (<${env.BUILD_URL}|Open>)"
@@ -76,7 +76,7 @@ pipeline {
                 jdk "jdk8"
             }
             steps {
-                container('maven') {
+                container('node') {
                     withEnv(['PATH+CHROMEHOME=/usr/lib64/chromium-browser/']) {
                         wrap([$class: 'Xvfb']) {
                             sh './gradlew test -Dcricket.url=http://localhost:8081/calc.html'
@@ -111,7 +111,7 @@ pipeline {
 
         stage('Deploy to System Test Environment') {
             steps {
-                container('maven') {
+                container('node') {
                     timeout(time:5, unit:'DAYS') {
                         input 'Do you want to deploy to System Test?'
                     }
