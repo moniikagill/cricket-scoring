@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
   - name: node
-    image: node:lts
+    image: node:8-alpine
     command:
     - cat
     tty: true
