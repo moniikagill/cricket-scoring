@@ -1,0 +1,12 @@
+kind: Pod
+metadata:
+  labels:
+    label: kubernetes
+     
+spec:
+  containers:
+  - name: node
+    image: node:lts
+    command:
+    - cat
+    tty: true
