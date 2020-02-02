@@ -19,20 +19,22 @@ pipeline {
     stages{
         stage('Build and Unit Test') {
             steps {
-                parallel (
-                    "JS and CSS" : {
-                        sh './gradlew jshintjs jsdocjs csslint'
-                    },
-                    "Java Test Compile" : {
-                        withEnv(["PATH+JAVA=${tool 'jdk8'}/bin"]) {
-                            sh './gradlew testClasses'
+                container('node') {
+                    parallel (
+                        "JS and CSS" : {
+                            sh './gradlew jshintjs jsdocjs csslint'
+                        },
+                        "Java Test Compile" : {
+                            withEnv(["PATH+JAVA=${tool 'jdk8'}/bin"]) {
+                                sh './gradlew testClasses'
+                            }
+                        },
+                        "JS Unit Test" : {
+                            sh 'npm install'
+                            sh 'grunt'
                         }
-                    },
-                    "JS Unit Test" : {
-                        sh 'npm install'
-                        sh 'grunt'
-                    }
-                )
+                    )
+                }
             }
 
             post {
@@ -56,9 +58,11 @@ pipeline {
 
         stage('Deploy to Acceptance Test Environment') {
             steps {
-                sh 'echo "Copying web app to Acceptance Environment (/var/www-test)"'
-                sh 'rsync -av --exclude=.svn web/*.html web/images web/js web/styles /var/www-test/'
-                slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} deployed to acceptance test (<${env.BUILD_URL}|Open>)"
+                container('maven') {
+                    sh 'echo "Copying web app to Acceptance Environment (/var/www-test)"'
+                    sh 'rsync -av --exclude=.svn web/*.html web/images web/js web/styles /var/www-test/'
+                    slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} deployed to acceptance test (<${env.BUILD_URL}|Open>)"
+                }
             }
         }
 
@@ -67,9 +71,11 @@ pipeline {
                 jdk "jdk8"
             }
             steps {
-                withEnv(['PATH+CHROMEHOME=/usr/lib64/chromium-browser/']) {
-                    wrap([$class: 'Xvfb']) {
-                        sh './gradlew test -Dcricket.url=http://localhost:8081/calc.html'
+                container('maven') {
+                    withEnv(['PATH+CHROMEHOME=/usr/lib64/chromium-browser/']) {
+                        wrap([$class: 'Xvfb']) {
+                            sh './gradlew test -Dcricket.url=http://localhost:8081/calc.html'
+                        }
                     }
                 }
             }
@@ -100,12 +106,14 @@ pipeline {
 
         stage('Deploy to System Test Environment') {
             steps {
-                timeout(time:5, unit:'DAYS') {
-                    input 'Do you want to deploy to System Test?'
+                container('maven') {
+                    timeout(time:5, unit:'DAYS') {
+                        input 'Do you want to deploy to System Test?'
+                    }
+                    sh 'echo "Copying web app to Test Environment (/var/www)"'
+                    sh 'rsync -av --exclude=.svn web/*.html web/images web/js web/styles /var/www/'
+                    //slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} deployed to system test (<${env.BUILD_URL}|Open>)"
                 }
-                sh 'echo "Copying web app to Test Environment (/var/www)"'
-                sh 'rsync -av --exclude=.svn web/*.html web/images web/js web/styles /var/www/'
-                //slackSend color:'good', message: "${env.HUDSON_URL} : ${env.BUILD_NUMBER} deployed to system test (<${env.BUILD_URL}|Open>)"
             }
         }
     }
