@@ -19,8 +19,9 @@ pipeline {
     stages{
         stage('Build and Unit Test') {
             steps {
-                container('node') {
-                    parallel (
+                parallel (
+                    container('node') {
+
                         "JS and CSS" : {
                             sh './gradlew jshintjs jsdocjs csslint'
                         },
@@ -33,8 +34,8 @@ pipeline {
                             sh 'npm install'
                             sh 'grunt'
                         }
-                    )
-                }
+                    }
+                )
             }
 
             post {
