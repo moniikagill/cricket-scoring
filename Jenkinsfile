@@ -77,7 +77,7 @@ pipeline {
             }
             steps {
                 container('node') {
-                    withEnv(['PATH+CHROMEHOME=/usr/lib64/chromium-browser/']) {
+                    withEnv(['PATH+CHROMEHOME=/usr/bin']) {
                         wrap([$class: 'Xvfb']) {
                             sh './gradlew test -Dcricket.url=http://localhost:8081/calc.html'
                         }
